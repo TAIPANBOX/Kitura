@@ -98,12 +98,40 @@ extension Substring {
         } while true
     }
 
-    /// Lookup table of valid hex characters
-    private static let validHexChars: [Character: UInt8] = [
-        "0": 0x00, "1": 0x01, "2": 0x02, "3": 0x03, "4": 0x04, "5": 0x05, "6": 0x06,
-        "7": 0x07, "8": 0x08, "9": 0x09, "a": 0x0A, "A": 0x0A, "b": 0x0B, "B": 0x0B,
-        "c": 0x0C, "C": 0x0C, "d": 0x0D, "D": 0x0D, "e": 0x0E, "E": 0x0E, "f": 0x0F,
-        "F": 0x0F
+//    /// Lookup table of valid hex characters
+    private static let validHexChars: [UInt8?] = [
+        /* 00 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* 08 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* 10 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* 18 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* 20 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* 28 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* 30 */  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+        /* 38 */  0x08, 0x09,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* 40 */   nil, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,  nil,
+        /* 48 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* 50 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* 58 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* 60 */   nil, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,  nil,
+        /* 68 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* 70 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* 78 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* 80 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* 88 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* 90 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* 98 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* A0 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* A8 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* B0 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* B8 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* C0 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* C8 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* D0 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* D8 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* E0 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* E8 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* F0 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
+        /* F8 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
     ]
 
     /// Process this substring, replacing each valid percent-escaped sequence with
@@ -132,8 +160,8 @@ extension Substring {
                     return
                 }
                 // get the hex digits
-                let hex1check = Substring.validHexChars[self[hexChar1]];
-                let hex2check = Substring.validHexChars[self[hexChar2]];
+                let hex1check = Substring.validHexChars[Int(self[hexChar1].unicodeScalars.first!.value)];
+                let hex2check = Substring.validHexChars[Int(self[hexChar2].unicodeScalars.first!.value)];
                 guard let hex1 = hex1check, let hex2 = hex2check else {
                     // Failure - invalid hex sequence - but we can try to continue
                     break
