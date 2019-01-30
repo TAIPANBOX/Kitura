@@ -77,8 +77,8 @@ extension Substring {
         value.replaceCharacters("+", with: " ")
 
 // TEMPORARY - evaluate benefit of removing this NSString method
+return (key: key, value: value)
         let decodedValue = value.removingPercentEncoding
-        //let decodedValue: Substring? = nil
         if decodedValue == nil {
             Log.warning("Unable to decode query parameter \(key) (coded value: \(value)")
         }
