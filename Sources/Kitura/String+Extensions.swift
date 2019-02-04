@@ -72,18 +72,15 @@ extension Substring {
         // substring from index
         var value = self[self.index(after: index)...]
 
-        //let valueReplacingPlus = value.replacingOccurrences(of: "+", with: " ")
         // Faster way to replace '+' with ' ' that does not involve conversion to NSString
         value.replaceCharacters("+", with: " ")
 
-// TEMPORARY - evaluate benefit of removing this NSString method
-        value.removePercentEncoding()
-        return (key: key, value: value)
-//        let decodedValue = value.removingPercentEncoding
-//        if decodedValue == nil {
-//            Log.warning("Unable to decode query parameter \(key) (coded value: \(value)")
-//        }
-//        return (key: key, value: decodedValue != nil ? Substring(decodedValue!) : value)
+        // Note: Foundation processing function
+        guard let decodedValue = value.removingPercentEncoding else {
+            Log.warning("Unable to decode query parameter \(key) (coded value: \(value)")
+            return (key: key, value: value)
+        }
+        return (key: key, value: Substring(decodedValue))
     }
 
     /// Finds and replaces all occurrences of a character with the provided substring
@@ -96,87 +93,5 @@ extension Substring {
             }
             self.replaceSubrange(startIndex...startIndex, with: dst)
         } while true
-    }
-
-//    /// Lookup table of valid hex characters
-    private static let validHexChars: [UInt8?] = [
-        /* 00 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* 08 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* 10 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* 18 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* 20 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* 28 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* 30 */  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-        /* 38 */  0x08, 0x09,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* 40 */   nil, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,  nil,
-        /* 48 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* 50 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* 58 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* 60 */   nil, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,  nil,
-        /* 68 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* 70 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* 78 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* 80 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* 88 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* 90 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* 98 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* A0 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* A8 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* B0 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* B8 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* C0 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* C8 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* D0 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* D8 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* E0 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* E8 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* F0 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-        /* F8 */   nil,  nil,  nil,  nil,  nil,  nil,  nil,  nil,
-    ]
-
-    /// Process this substring, replacing each valid percent-escaped sequence with
-    /// the corresponding character.
-    /// This implementation differs subtly from the CoreFoundation approach, in that
-    /// we will replace all valid percent-escaped sequences whilst ignoring any
-    /// invalid ones.
-    private mutating func removePercentEncoding() {
-        guard self.count > 2 else {
-            // Failure - string is too short to contain a valid escape sequence
-            return
-        }
-        var currentIndex = self.startIndex
-        repeat {
-            let char = self[currentIndex]
-            switch char {
-            case "%":
-                let hexChar1 = self.index(after: currentIndex)
-                guard hexChar1 < self.endIndex else {
-                    // Failure - invalid escape sequence (EOF)
-                    return
-                }
-                let hexChar2 = self.index(after: hexChar1)
-                guard hexChar2 < self.endIndex else {
-                    // Failure - invalid escape sequence (EOF)
-                    return
-                }
-                // get the hex digits
-                let hex1check = Substring.validHexChars[Int(self[hexChar1].unicodeScalars.first!.value)];
-                let hex2check = Substring.validHexChars[Int(self[hexChar2].unicodeScalars.first!.value)];
-                guard let hex1 = hex1check, let hex2 = hex2check else {
-                    // Failure - invalid hex sequence - but we can try to continue
-                    break
-                }
-                // convert hex digits
-                let resultingByte = (hex1 << 4) + hex2
-                let resultingChar = UnicodeScalar(resultingByte)
-                let resultingCharSequence = [Character(resultingChar)]
-                // assign result
-                self.replaceSubrange(currentIndex...hexChar2, with: resultingCharSequence)
-            default:
-                // Not the start of an escape sequence, carry on
-                break
-            }
-            currentIndex = self.index(after: currentIndex)
-        } while currentIndex < self.endIndex
     }
 }
